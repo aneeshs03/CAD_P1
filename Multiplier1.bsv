@@ -1,6 +1,6 @@
-package Multiplier1;
+package PipelinedsignedMultiplier1;
 
-// Define a 32-bit signed multiplier interface
+//  Interface for 32-bit signed multiplier
 interface SignedMultiplierIfc;
   method Action start(Int#(32) multiplicand, Int#(32) multiplier);
   method Action done();
