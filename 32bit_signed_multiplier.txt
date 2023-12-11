@@ -1,126 +1,89 @@
-package Multiplier;
+package bit_signed_multiplier_case1;
 
 import Connectable::*;
 import RegFile::*;
 
 interface MultiplierIfc;
-  method Action start(Bit#(32) multiplicand, Bit#(32) multiplier);
+  method Action start(Bit#(32) multiplicand,Bit#(32) multiplier);
   method Bit#(64) getResult();
 endinterface
 
-module mkMultiplier (MultiplierIfc);
+module mkbit_signed_multiplier (MultiplierIfc);
 
+  Reg#(Bit#(64)) multiplicand64 <- mkReg(0);
+  Reg#(Bit#(32)) bitmultiplier <- mkReg(0);
   Reg#(Bit#(64)) productReg <- mkReg(0);
   Reg#(Bit#(64)) productResult <- mkReg(0);
   Reg#(Bit#(32)) multiplicand_twos <- mkReg(0);
   Reg#(Bit#(32)) multiplier_twos <- mkReg(0);
-  Reg#(Bit#(32)) variables[31];
+  Reg#(Bit#(64)) variables<- mkReg(0);
 
-  MultiplierIfc method Action start(Bit#(32) multiplicand, Bit#(32) multiplier);
+  method Action start(Bit#(32) multiplicand, Bit#(32) multiplier);
     productReg <= 0;
-    multiplicand_twos = (-multiplicand)+1;
-    multiplier_twos = (-multiplier)+1;
-
-    if (multiplicand > 0 && multiplier > 0) begin
+    multiplicand_twos <= (-multiplicand) + 1;
+    multiplier_twos <= (-multiplier) + 1;
     
-    multiplicand <= tobits(multiplicand); 
-    multiplier <= tobits(multiplier);    
+    
+    if (multiplicand[31] == 0 && multiplier[31] == 0) begin
+    multiplicand64 <= zeroExtend(multiplicand);
+      for (Integer i = 0; i < 32; i = i + 1) begin
+        if (multiplier[i] == 1) begin
+        productReg <= productReg + (multiplicand64 << i);
 
-    for (Integer i = 0; i < 32; i = i + 1) begin
-      if (multiplier[i]) begin
-        productReg <= productReg + (multiplicand << i);
+        end
       end
-     end
-   productResult = productReg;
+      productResult <= productReg;
     end
 
-  else if (multiplicand < 0 && multiplier > 0) begin
-
- multiplicand <= tobits(multiplicand); 
-    multiplier <= tobits(multiplier);   
-
+  else if (multiplicand[31] ==1 && multiplier[31] == 0) begin
+  multiplicand64 <= zeroExtend(multiplicand_twos);
   for (Integer i = 0; i < 32; i = i + 1) begin
-      variables[i] <= (32 - i)'1s;
-      if (multiplier[i]) begin
-        productReg <= productReg + (variables[i] @@ (multiplicand_twos << i));
+   variables <= 64'b1111111111111111111111111111111100000000000000000000000000000000;
+      if (multiplier[i] ==1) begin
+        productReg <= productReg +((variables<< 1) + (multiplicand64 << i));
       end
      end
-  productResult = (-productReg) + 1;
+  productResult <= (-productReg) + 1;
   end
 
-  else if (multiplicand < 0 && multiplier < 0) begin
-
-  multiplicand <= tobits(multiplicand); 
-    multiplier <= tobits(multiplier);   
-
+  else if (multiplicand[31] == 1 && multiplier[31] == 1) begin  
+  multiplicand64 <= zeroExtend(multiplicand_twos);
   for (Integer i = 0; i < 31; i = i + 1) begin
-      variables[i] <= (32 - i)'1s;
-      if (multiplier_twos[i]) begin
-        productReg <= productReg + (variables[i] @@ (multiplicand_twos << i));
+      variables <= 64'b1111111111111111111111111111111100000000000000000000000000000000;
+      if (multiplier_twos[i] == 1) begin
+        productReg <= productReg + ((variables<< 1) + (multiplicand64 << i));
       end
      end
-  productReg <= productReg + (-(1'1s @@ (multiplicand_twos << 31)) + 1);
-  productResult = productReg;
+     
+  productReg <= productReg + (-((variables << 1)+ (multiplicand64 << 31)) + 1);
+  productResult <= productReg;
   end
+  
+  else if (multiplicand[31] == 0 && multiplier[31] ==1) begin  
+  multiplicand64 <= zeroExtend(multiplicand);
+  for (Integer i = 0; i < 31; i = i + 1) begin
    
-  else if (multiplicand > 0 && multiplier < 0) begin
-
- multiplicand <= tobits(multiplicand); 
-    multiplier <= tobits(multiplier);   
-
-  for (Integer i = 0; i < 31; i = i + 1) begin
-  if (multiplicand[31] == 1) begin
-      variables[i] <= (32 - i)'1s;
-  end
-  if (multiplicand[31] == 0) begin
-     variables[i] <= (32 - i)'0s;
-  end
-      if (multiplier_twos[i]) begin
-        productReg <= productReg + (variables[i] @@ (multiplicand << i));
+      if (multiplier_twos[i] == 1) begin
+        productReg <= productReg + (multiplicand64 << i);
       end
-     end
+   end
 
-  if (multiplicand[31] == 1) begin
-      variables[31] <= (32 - i)'1s;
-  end
-  if (multiplicand[31] == 0) begin
-     variables[31] <= (32 - i)'0s;
+  productReg <= productReg + (-(multiplicand64 << 31) + 1); 
+
+  productResult <= (-productReg) + 1;
   end
 
-  productReg <= productReg + (-(variables[31] @@ (multiplicand << 31)) + 1); 
-
-  productResult = (-productReg) + 1;
+  else begin
+    productResult <= 0;
   end
 
- else begin
-  productResult <= 0;
- end
-
-  endmethod
-
+endmethod
   // Interface method to get the result
-  MultiplierIfc method Bit#(64) getResult();
-    return productResult;
+   method Bit#(64) getResult();
+  return productResult;
   endmethod
 
 endmodule
 
 endpackage
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
