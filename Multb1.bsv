@@ -3,22 +3,22 @@ package Multb1;
 import Connectable::*;
 import bit_signed_multiplier_case1::*;
 
-// Define a testbench module
+// Testbench module
 module mkTestbench(Empty);
-  // Instantiate the multiplier module
+  
   MultiplierIfc dut <- mkbit_signed_multiplier();
 
   // Test procedure
   rule test;
     // Test values
-    let multiplicand = 1101; // Example value (1101 in binary)
-    let multiplier = 1010;   // Example value (1010 in binary)
+    let multiplicand = 32'b11011010101101001011100011001011; 
+    let multiplier =   32'b00110111001000101100101011011010; 
 
-    // Start the multiplication
+    // multiplication
     dut.start((multiplicand), (multiplier));
 
     // Wait for a while (simulation time)
-   //mkDelay(10);
+   mkDelay(10);
 
     // Get the result
     let result = dut.getResult();
