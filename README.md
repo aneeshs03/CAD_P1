@@ -10,6 +10,7 @@ Bluespec SystemVerilog (BSV), contains two components:
 2. "Testbench file"contains the logic for verifying the functionality of a Bluespec module. It includes code to create instances of the module, apply inputs, and observe outputs during simulation.
 
 We have done the signed multiplication for 4 cases:
+
     Case 1: Both multiplicand and multiplier are positive.
     
     Case 2: Multiplicand is negative, and the multiplier is positive.
